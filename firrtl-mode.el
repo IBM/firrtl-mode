@@ -1,9 +1,16 @@
-;; Copyright 2018 IBM
+;;; firrtl-mode.el --- mode for working with FIRRTL files
 
+;; Author: Schuyler Eldridge <schuyler.eldridge@ibm.com>
+;; URL: https://github.com/ibm/firrtl-mode
+;; Keywords: languages, firrtl
+;; Version: 0
+
+;; Copyright 2018 IBM
+;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
 ;; You may obtain a copy of the License at
-
+;;
 ;;   http://www.apache.org/licenses/LICENSE-2.0
 
 ;; Unless required by applicable law or agreed to in writing, software
@@ -12,6 +19,18 @@
 ;; See the License for the specific language governing permissions and
 ;; limitations under the License.
 
+;;; Commentary:
+
+;; A major mode for editing FIRRTL files currently only providing
+;; syntax highlighting.
+;;
+;;   - FIRRTL: https://github.com/freechipsproject/firrtl
+
+;;; Code:
+
+(defvar firrtl-primop)
+(defvar firrtl-type)
+(defvar firrtl-keyword)
 (setq firrtl-primop
       '("add" "sub" "mul" "div" "mod"
         "eq" "neq" "geq" "gt" "leq" "lt"
@@ -33,6 +52,10 @@
         "printf" "stop"
         "inst" "of"))
 
+(defvar firrtl-primop-regexp)
+(defvar firrtl-type-regexp)
+(defvar firrtl-keyword-regexp)
+(defvar firrtl-font-lock-keywords)
 (setq firrtl-primop-regexp
       (mapconcat 'identity
                  (list "=\s*\\("
@@ -94,3 +117,4 @@
 (add-to-list 'auto-mode-alist '("\\.fir$" . firrtl-mode))
 
 (provide 'firrtl-mode)
+;;; firrtl-mode.el ends here

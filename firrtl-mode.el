@@ -26,10 +26,12 @@
         "wire" "reg" "node"
         "Clock" "Analog"))
 (setq firrtl-keyword
-      '("flip"
+      '("when"
+        "flip"
         "skip"
-        "is invalid"
-        "printf" "stop"))
+        "is invalid" "with"
+        "printf" "stop"
+        "inst" "of"))
 
 (setq firrtl-primop-regexp
       (mapconcat 'identity
@@ -45,8 +47,6 @@
         ("\\(circuit\\|module\\)\\s-+\\([^ =:;([]+\\)\\s-+:"
          (1 font-lock-keyword-face)
          (2 font-lock-function-name-face))
-        ("\\(circuit\\|module\\)"
-         (1 font-lock-keyword-face))
         ;; Literals
         ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
          (1 font-lock-type-face))
@@ -57,18 +57,26 @@
         ("\\(;\\|@\\)\\(.*\\)$"
          (1 font-lock-comment-delimiter-face)
          (2 font-lock-comment-face))
-        ;; Indices and numbers
-        ("[ \\[]\\([0-9]+\\)"
-         (1 font-lock-variable-name-face))
-        ("\"h?[0-9]+\""
-         (0 font-lock-variable-name-face))
+        ;; Indices and numbers (for a firrtl-syntax feel)
+        ("[ \\[(]\\([0-9]+\\)"
+         (1 font-lock-string-face))
         ;; Keywords
-        (,firrtl-keyword-regexp . font-lock-type-face)
+        (,firrtl-keyword-regexp . font-lock-keyword-face)
+        ("\\(<[=-]\\)"
+         (1, font-lock-keyword-face))
+        ("\\(reset =>\\)"
+         (1, font-lock-keyword-face))
         ;; PrimOps
         (,firrtl-primop-regexp
          (1 font-lock-keyword-face))
         ;; Types
         (,firrtl-type-regexp . font-lock-type-face)
+        ;; Variable declarations
+        ("\\(input\\|output\\|wire\\|reg\\|node\\)\s+\\([A-Za-z0-9_]+\\)"
+         (2 font-lock-variable-name-face))
+        ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
+         (1 font-lock-variable-name-face)
+         (2 font-lock-type-face))
         ))
 
 (define-derived-mode firrtl-mode text-mode "FIRRTL mode"

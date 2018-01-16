@@ -3,7 +3,7 @@
 ;; Author: Schuyler Eldridge <schuyler.eldridge@ibm.com>
 ;; URL: https://github.com/ibm/firrtl-mode
 ;; Keywords: languages, firrtl
-;; Version: 0
+;; Version: 0.1
 
 ;; Copyright 2018 IBM
 ;;

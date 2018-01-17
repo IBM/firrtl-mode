@@ -1,9 +1,12 @@
 ;;; firrtl-mode.el --- mode for working with FIRRTL files
 
 ;; Author: Schuyler Eldridge <schuyler.eldridge@ibm.com>
+;; Maintainer: Schuyler Eldridge <schuyler.eldridge@ibm.com>
+;; Created: April 20, 2017
 ;; URL: https://github.com/ibm/firrtl-mode
 ;; Keywords: languages, firrtl
-;; Version: 0.1
+;; Version: 0.2
+;; Package-Requires: ((emacs "24.3"))
 
 ;; Copyright 2018 IBM
 ;;
@@ -109,10 +112,39 @@
 (setq firrtl-type-regexp nil)
 (setq firrtl-keyword-regexp nil)
 
+;; Indentation
+(defun firrtl-mode-indent-line ()
+  "Indent the current FIRRTL line."
+  (interactive)
+  (beginning-of-line)
+  (let ((not-indented t) (cur-indent))
+    (cond ((bobp)
+           (setq cur-indent 0))
+          ((looking-at "^\s*circuit")
+           (setq cur-indent 0))
+          ((looking-at "^\s*module")
+           (setq cur-indent tab-width))
+          (t
+           (save-excursion
+             (backward-word)
+             (beginning-of-line)
+             (cond ((looking-at "^\s*circuit")
+                    (setq cur-indent (+ (current-indentation) tab-width)))
+                   ((looking-at "^\s*module")
+                    (setq cur-indent (+ (current-indentation) tab-width)))
+                   (t
+                    (setq cur-indent (* 2 tab-width)))))))
+    (indent-line-to cur-indent)
+    ))
+
 ;;;###autoload
 (define-derived-mode firrtl-mode text-mode "FIRRTL mode"
-  "Major mode for editing Flexible Intermediate Representation of RTL (FIRRTL)"
+  "Major mode for editing FIRRTL (Flexible Intermediate Representation of RTL)."
+  (setq-local tab-width 2) ;; Defined FIRRTL tab width
+
+  ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
+  (setq-local indent-line-function 'firrtl-mode-indent-line)
   )
 
 ;;;###autoload

@@ -31,6 +31,20 @@
 
 ;;; Code:
 
+;;; Customization
+(defgroup firrtl-mode nil
+  "Configuration for firrtl-mode."
+  :prefix "firrtl-"
+  :group 'wp
+  :link '(url-link "https://github.com/ibm/firrtl-mode"))
+
+(defcustom firrtl-mode-tab-width 2
+  "Width of a tab for FIRRTL HDL."
+  :group 'firrtl-mode
+  :type '(integer))
+
+;;; Actual Code
+
 (defvar firrtl-primop)
 (defvar firrtl-type)
 (defvar firrtl-keyword)
@@ -140,7 +154,8 @@
 ;;;###autoload
 (define-derived-mode firrtl-mode text-mode "FIRRTL mode"
   "Major mode for editing FIRRTL (Flexible Intermediate Representation of RTL)."
-  (setq-local tab-width 2) ;; Defined FIRRTL tab width
+  (when firrtl-mode-tab-width
+    (setq tab-width firrtl-mode-tab-width)) ;; Defined FIRRTL tab width
 
   ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))

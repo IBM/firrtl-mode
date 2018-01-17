@@ -145,6 +145,7 @@
   ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
   (setq-local indent-line-function 'firrtl-mode-indent-line)
+  (setq comment-start ";")
   )
 
 ;;;###autoload

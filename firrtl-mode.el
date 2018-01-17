@@ -79,7 +79,7 @@
         ;; Strings
         ("\\(\".+?\"\\)"
          (1, font-lock-string-face))
-        ;; Comments, source locators
+        ;; Comments, info
         ("\\(;\\|@\\)\\(.*\\)$"
          (1 font-lock-comment-delimiter-face)
          (2 font-lock-comment-face))

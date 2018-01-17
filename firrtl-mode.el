@@ -24,10 +24,8 @@
 
 ;;; Commentary:
 
-;; A major mode for editing FIRRTL files currently only providing
-;; syntax highlighting.
-;;
-;;   - FIRRTL: https://github.com/freechipsproject/firrtl
+;; A major mode for editing FIRRTL files currently providing syntax
+;; highlighting and indentation.
 
 ;;; Code:
 
@@ -44,87 +42,72 @@
   :type '(integer))
 
 ;;; Actual Code
+(defvar firrtl-primop
+  '("add" "sub" "mul" "div" "mod"
+    "eq" "neq" "geq" "gt" "leq" "lt"
+    "dshl" "dshr" "shl" "shr"
+    "not" "and" "or" "xor" "andr" "orr" "xorr"
+    "neg" "cvt"
+    "asUInt" "asSInt" "asClock"
+    "pad" "cat" "bits" "head" "tail"
+    "mux" "validif"))
+(defvar firrtl-type
+  '("input" "output"
+    "wire" "reg" "node"
+    "Clock" "Analog"))
+(defvar firrtl-keyword
+  '("when"
+    "flip"
+    "skip"
+    "is invalid" "with"
+    "printf" "stop"
+    "inst" "of"))
 
-(defvar firrtl-primop)
-(defvar firrtl-type)
-(defvar firrtl-keyword)
-(setq firrtl-primop
-      '("add" "sub" "mul" "div" "mod"
-        "eq" "neq" "geq" "gt" "leq" "lt"
-        "dshl" "dshr" "shl" "shr"
-        "not" "and" "or" "xor" "andr" "orr" "xorr"
-        "neg" "cvt"
-        "asUInt" "asSInt" "asClock"
-        "pad" "cat" "bits" "head" "tail"
-        "mux" "validif"))
-(setq firrtl-type
-      '("input" "output"
-        "wire" "reg" "node"
-        "Clock" "Analog"))
-(setq firrtl-keyword
-      '("when"
-        "flip"
-        "skip"
-        "is invalid" "with"
-        "printf" "stop"
-        "inst" "of"))
+(defvar firrtl-primop-regexp
+  (mapconcat 'identity
+             (list "=\s*\\("
+                   (mapconcat 'identity firrtl-primop "\\|")
+                   "\\)(")
+             ""))
+(defvar firrtl-type-regexp (regexp-opt firrtl-type 'words))
+(defvar firrtl-keyword-regexp (regexp-opt firrtl-keyword 'words))
 
-(defvar firrtl-primop-regexp)
-(defvar firrtl-type-regexp)
-(defvar firrtl-keyword-regexp)
-(defvar firrtl-font-lock-keywords)
-(setq firrtl-primop-regexp
-      (mapconcat 'identity
-                 (list "=\s*\\("
-                       (mapconcat 'identity firrtl-primop "\\|")
-                       "\\)(")
-                 ""))
-(setq firrtl-type-regexp (regexp-opt firrtl-type 'words))
-(setq firrtl-keyword-regexp (regexp-opt firrtl-keyword 'words))
-
-(setq firrtl-font-lock-keywords
-      `(;; Circuit, module declarations
-        ("\\(circuit\\|\\(ext\\)?module\\)\\s-+\\([^ =:;([]+\\)\\s-+:"
-         (1 font-lock-keyword-face)
-         (3 font-lock-function-name-face))
-        ;; Literals
-        ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
-         (1 font-lock-type-face))
-        ;; Strings
-        ("\\(\".+?\"\\)"
-         (1, font-lock-string-face))
-        ;; Comments, info
-        ("\\(;\\|@\\)\\(.*\\)$"
-         (1 font-lock-comment-delimiter-face)
-         (2 font-lock-comment-face))
-        ;; Indices and numbers (for a firrtl-syntax feel)
-        ("[ \\[(]\\([0-9]+\\)"
-         (1 font-lock-string-face))
-        ;; Keywords
-        (,firrtl-keyword-regexp . font-lock-keyword-face)
-        ("\\(<[=-]\\)"
-         (1, font-lock-keyword-face))
-        ("\\(reset =>\\)"
-         (1, font-lock-keyword-face))
-        ;; PrimOps
-        (,firrtl-primop-regexp
-         (1 font-lock-keyword-face))
-        ;; Types
-        (,firrtl-type-regexp . font-lock-type-face)
-        ;; Variable declarations
-        ("\\(input\\|output\\|wire\\|reg\\|node\\)\s+\\([A-Za-z0-9_]+\\)"
-         (2 font-lock-variable-name-face))
-        ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
-         (1 font-lock-variable-name-face)
-         (2 font-lock-type-face))
-        ))
-
-(setq firrtl-primop nil)
-(setq firrtl-type nil)
-(setq firrtl-keyword nil)
-(setq firrtl-primop-regexp nil)
-(setq firrtl-type-regexp nil)
-(setq firrtl-keyword-regexp nil)
+(defvar firrtl-font-lock-keywords
+  `(;; Circuit, module declarations
+    ("\\(circuit\\|\\(ext\\)?module\\)\\s-+\\([^ =:;([]+\\)\\s-+:"
+     (1 font-lock-keyword-face)
+     (3 font-lock-function-name-face))
+    ;; Literals
+    ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
+     (1 font-lock-type-face))
+    ;; Strings
+    ("\\(\".+?\"\\)"
+     (1, font-lock-string-face))
+    ;; Comments, info
+    ("\\(;\\|@\\)\\(.*\\)$"
+     (1 font-lock-comment-delimiter-face)
+     (2 font-lock-comment-face))
+    ;; Indices and numbers (for a firrtl-syntax feel)
+    ("[ \\[(]\\([0-9]+\\)"
+     (1 font-lock-string-face))
+    ;; Keywords
+    (,firrtl-keyword-regexp . font-lock-keyword-face)
+    ("\\(<[=-]\\)"
+     (1, font-lock-keyword-face))
+    ("\\(reset =>\\)"
+     (1, font-lock-keyword-face))
+    ;; PrimOps
+    (,firrtl-primop-regexp
+     (1 font-lock-keyword-face))
+    ;; Types
+    (,firrtl-type-regexp . font-lock-type-face)
+    ;; Variable declarations
+    ("\\(input\\|output\\|wire\\|reg\\|node\\)\s+\\([A-Za-z0-9_]+\\)"
+     (2 font-lock-variable-name-face))
+    ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
+     (1 font-lock-variable-name-face)
+     (2 font-lock-type-face))
+    ))
 
 ;; Indentation
 (defun firrtl-mode-indent-line ()

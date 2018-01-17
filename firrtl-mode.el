@@ -30,7 +30,7 @@
 ;;; Code:
 
 ;;; Customization
-(defgroup firrtl-mode nil
+(defgroup firrtl nil
   "Configuration for firrtl-mode."
   :prefix "firrtl-"
   :group 'wp

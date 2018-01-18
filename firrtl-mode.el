@@ -5,7 +5,7 @@
 ;; Created: April 20, 2017
 ;; URL: https://github.com/ibm/firrtl-mode
 ;; Keywords: languages, firrtl
-;; Version: 0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "24.3"))
 
 ;; Copyright 2018 IBM
@@ -36,9 +36,9 @@
   :group 'wp
   :link '(url-link "https://github.com/ibm/firrtl-mode"))
 
-(defcustom firrtl-mode-tab-width 2
+(defcustom firrtl-tab-width 2
   "Width of a tab for FIRRTL HDL."
-  :group 'firrtl-mode
+  :group 'firrtl
   :type '(integer))
 
 ;;; Actual Code
@@ -56,9 +56,9 @@
     "wire" "reg" "node"
     "Clock" "Analog"))
 (defvar firrtl-keyword
-  '("when"
+  '("circuit" "module"
+    "when" "else" "skip"
     "flip"
-    "skip"
     "is invalid" "with"
     "printf" "stop"
     "inst" "of"))
@@ -74,7 +74,7 @@
 
 (defvar firrtl-font-lock-keywords
   `(;; Circuit, module declarations
-    ("\\(circuit\\|\\(ext\\)?module\\)\\s-+\\([^ =:;([]+\\)\\s-+:"
+    ("\\(circuit\\|\\(ext\\)?module\\)\s+\\([^ =:;([]+\\)\s+"
      (1 font-lock-keyword-face)
      (3 font-lock-function-name-face))
     ;; Literals
@@ -110,39 +110,54 @@
     ))
 
 ;; Indentation
-(defun firrtl-mode-indent-line ()
-  "Indent the current FIRRTL line."
-  (interactive)
+(defun firrtl-possible-indentations ()
+  "Determine all possible indentations for a given line."
   (beginning-of-line)
-  (let ((not-indented t) (cur-indent))
-    (cond ((bobp)
-           (setq cur-indent 0))
-          ((looking-at "^\s*circuit")
-           (setq cur-indent 0))
-          ((looking-at "^\s*module")
-           (setq cur-indent tab-width))
+  (let (indents)
+    (cond ((or (bobp) (looking-at "\s*circuit"))
+           (setq indents (list 0)))
+          ((looking-at "\s*module")
+           (setq indents (list tab-width)))
           (t
            (save-excursion
              (backward-word)
              (beginning-of-line)
-             (cond ((looking-at "^\s*circuit")
-                    (setq cur-indent (+ (current-indentation) tab-width)))
-                   ((looking-at "^\s*module")
-                    (setq cur-indent (+ (current-indentation) tab-width)))
+             (cond ((looking-at "\s*circuit")
+                    (setq indents (number-sequence 0 tab-width tab-width)))
+                   ((looking-at "\s*module")
+                    (setq indents (number-sequence 0 (* 2 tab-width) tab-width)))
+                   ((looking-at "\s*\\(when\\|else\\)")
+                    (setq indents (number-sequence
+                                    0 (+ (current-indentation) tab-width)
+                                    tab-width)))
                    (t
-                    (setq cur-indent (* 2 tab-width)))))))
-    (indent-line-to cur-indent)
+                    (setq indents (number-sequence
+                                    0 (current-indentation) tab-width)))))))
+    indents
     ))
+
+(defvar firrtl--indents)
+(defun firrtl-cycle-indents ()
+  "Indent the current FIRRTL line.
+Uses firrtl-possible-indentations to determine all possible
+indentations for the given line and then cycles through these on
+repeated key presses."
+  (interactive)
+  (if (eq last-command 'indent-for-tab-command)
+      (setq firrtl--indents (append (last firrtl--indents)
+                                    (butlast firrtl--indents)))
+    (setq firrtl--indents (firrtl-possible-indentations)))
+  (indent-line-to (car (last firrtl--indents))))
 
 ;;;###autoload
 (define-derived-mode firrtl-mode text-mode "FIRRTL mode"
   "Major mode for editing FIRRTL (Flexible Intermediate Representation of RTL)."
-  (when firrtl-mode-tab-width
-    (setq tab-width firrtl-mode-tab-width)) ;; Defined FIRRTL tab width
+  (when firrtl-tab-width
+    (setq tab-width firrtl-tab-width)) ;; Defined FIRRTL tab width
 
   ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
-  (setq-local indent-line-function 'firrtl-mode-indent-line)
+  (setq-local indent-line-function 'firrtl-cycle-indents)
   (setq comment-start ";")
   )
 

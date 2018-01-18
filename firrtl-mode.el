@@ -139,7 +139,7 @@
 (defvar firrtl--indents)
 (defun firrtl-cycle-indents ()
   "Indent the current FIRRTL line.
-Uses firrtl-possible-indentations to determine all possible
+Uses 'firrtl-possible-indentations' to determine all possible
 indentations for the given line and then cycles through these on
 repeated key presses."
   (interactive)

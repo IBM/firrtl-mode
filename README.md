@@ -3,7 +3,7 @@ FIRRTL Emacs Mode
 
 [![MELPA](https://melpa.org/packages/firrtl-mode-badge.svg)](https://melpa.org/#/firrtl-mode)
 
-Adds support for syntax highlighting and indentation for [FIRRTL (Flexible Intermediate Representation of RTL)](https://github.com/freechipsproject/firrtl).
+Adds support for syntax highlighting and indentation for [FIRRTL (Flexible Intermediate Representation for RTL)](https://github.com/freechipsproject/firrtl).
 
 Two options for installation: as a package from MELPA and manually.
 

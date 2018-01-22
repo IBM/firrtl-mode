@@ -121,16 +121,19 @@
              (backward-word)
              (beginning-of-line)
              (cond ((looking-at "\s*circuit")
-                    (setq indents (number-sequence 0 tab-width tab-width)))
+                    (setq indents (list tab-width)))
                    ((looking-at "\s*module")
-                    (setq indents (number-sequence 0 (* 2 tab-width) tab-width)))
+                    (setq indents (list (* 2 tab-width))))
                    ((looking-at "\s*\\(when\\|else\\)")
                     (setq indents (number-sequence
-                                    0 (+ (current-indentation) tab-width)
-                                    tab-width)))
+                                   (* 2 tab-width)
+                                   (+ (current-indentation) tab-width)
+                                   tab-width)))
                    (t
                     (setq indents (number-sequence
-                                    0 (current-indentation) tab-width)))))))
+                                   (* 2 tab-width)
+                                   (current-indentation)
+                                   tab-width)))))))
     indents
     ))
 

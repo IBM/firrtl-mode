@@ -158,6 +158,7 @@ repeated key presses."
     (modify-syntax-entry ?\] ")[" table)
     (modify-syntax-entry ?\{ "(}" table)
     (modify-syntax-entry ?\} "){" table)
+    (modify-syntax-entry ?_ "w" table)
     table))
 
 ;;;###autoload

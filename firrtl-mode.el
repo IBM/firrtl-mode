@@ -54,14 +54,16 @@
 (defvar firrtl-type
   '("input" "output"
     "wire" "reg" "node"
-    "Clock" "Analog"))
+    "Clock" "Analog"
+    "parameter"))
 (defvar firrtl-keyword
   '("circuit" "module"
     "when" "else" "skip"
     "flip"
     "is invalid" "with"
     "printf" "stop"
-    "inst" "of"))
+    "inst" "of"
+    "defname"))
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
@@ -83,10 +85,6 @@
     ;; Strings
     ("\\(\".+?\"\\)"
      (1, font-lock-string-face))
-    ;; Comments, info
-    ("\\(;\\|@\\)\\(.*\\)$"
-     (1 font-lock-comment-delimiter-face)
-     (2 font-lock-comment-face))
     ;; Indices and numbers (for a firrtl-syntax feel)
     ("[ \\[(]\\([0-9]+\\)"
      (1 font-lock-string-face))
@@ -102,7 +100,7 @@
     ;; Types
     (,firrtl-type-regexp . font-lock-type-face)
     ;; Variable declarations
-    ("\\(input\\|output\\|wire\\|reg\\|node\\)\s+\\([A-Za-z0-9_]+\\)"
+    ("\\(input\\|output\\|wire\\|reg\\|node\\|parameter\\)\s+\\([A-Za-z0-9_]+\\)"
      (2 font-lock-variable-name-face))
     ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
      (1 font-lock-variable-name-face)
@@ -149,6 +147,19 @@ repeated key presses."
     (setq firrtl--indents (firrtl-possible-indentations)))
   (indent-line-to (car (last firrtl--indents))))
 
+(defvar firrtl-table
+  (let ((table (make-syntax-table text-mode-syntax-table)))
+    (modify-syntax-entry ?\; "<" table)
+    (modify-syntax-entry ?@ "<" table)
+    (modify-syntax-entry ?\n ">" table)
+    (modify-syntax-entry ?< "(>" table)
+    (modify-syntax-entry ?> ")<" table)
+    (modify-syntax-entry ?\[ "(]" table)
+    (modify-syntax-entry ?\] ")[" table)
+    (modify-syntax-entry ?\{ "(}" table)
+    (modify-syntax-entry ?\} "){" table)
+    table))
+
 ;;;###autoload
 (define-derived-mode firrtl-mode text-mode "FIRRTL mode"
   "Major mode for editing FIRRTL (Flexible Intermediate Representation of RTL)."
@@ -158,11 +169,11 @@ repeated key presses."
   ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
   (setq-local indent-line-function 'firrtl-cycle-indents)
-  (setq comment-start ";")
+  (set-syntax-table firrtl-table)
   )
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.fir$" . firrtl-mode))
+(add-to-list 'auto-mode-alist '("\\.fir\\'" . firrtl-mode))
 
 (provide 'firrtl-mode)
 ;;; firrtl-mode.el ends here

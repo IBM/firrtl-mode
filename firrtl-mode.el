@@ -160,8 +160,7 @@ repeated key presses."
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
   (setq-local indent-line-function 'firrtl-cycle-indents)
   (set-syntax-table firrtl-table)
-  (make-local-variable 'comment-start)
-  (setq comment-start ";")
+  (setq-local comment-start ";")
   )
 
 ;;;###autoload

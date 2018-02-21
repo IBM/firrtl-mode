@@ -55,7 +55,7 @@
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
-             (list "=\s*\\("
+             (list "\s*\\("
                    (mapconcat 'identity firrtl-primop "\\|")
                    "\\)(")
              ""))

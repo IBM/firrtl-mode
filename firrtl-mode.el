@@ -45,8 +45,8 @@
 (defvar firrtl-primop
   '("add" "sub" "mul" "div" "rem" "lt" "leq" "gt" "geq" "eq" "neq" "pad"
     "asUInt" "asSInt" "asClock" "shl" "shr" "dshl" "dshr" "cvt" "neg" "not"
-    "and" "or" "xor" "andr" "orr" "xorr" "cat" "bits" "head" "tail" "mux"
-    "validif"))
+    "and" "or" "xor" "andr" "orr" "xorr" "cat" "bits" "head" "tail"
+    "asFixedPoint" "bpshl" "bpshr" "bpset" "mux" "validif"))
 (defvar firrtl-type
   '("input" "output" "wire" "reg" "node" "Clock" "Analog" "parameter"))
 (defvar firrtl-keyword

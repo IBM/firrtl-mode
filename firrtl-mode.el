@@ -96,7 +96,7 @@
   (let (indents)
     (cond ((or (bobp) (looking-at "\s*circuit"))
            (setq indents (list 0)))
-          ((looking-at "\s*module")
+          ((looking-at "\s*\\(ext\\)?module")
            (setq indents (list tab-width)))
           (t
            (save-excursion
@@ -106,7 +106,7 @@
                     (setq indents (list 0)))
                    ((looking-at "\s*circuit")
                     (setq indents (list tab-width)))
-                   ((looking-at "\s*module")
+                   ((looking-at "\s*\\(ext\\)?module")
                     (setq indents (list (* 2 tab-width))))
                    ((looking-at "\s*\\(when\\|else\\)")
                     (setq indents (number-sequence

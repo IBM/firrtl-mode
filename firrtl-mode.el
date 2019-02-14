@@ -5,10 +5,10 @@
 ;; Created: April 20, 2017
 ;; URL: https://github.com/ibm/firrtl-mode
 ;; Keywords: languages, firrtl
-;; Version: 0.3
+;; Version: 0.3.1
 ;; Package-Requires: ((emacs "24.3"))
 
-;; Copyright 2018 IBM
+;; Copyright 2017-2019 IBM
 ;;
 ;; Licensed under the Apache License, Version 2.0 (the "License");
 ;; you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
     "and" "or" "xor" "andr" "orr" "xorr" "cat" "bits" "head" "tail"
     "asFixedPoint" "bpshl" "bpshr" "bpset" "mux" "validif"))
 (defvar firrtl-type
-  '("input" "output" "wire" "reg" "node" "Clock" "Analog" "parameter"))
+  '("input" "output" "wire" "reg" "node" "Clock" "Analog" "parameter" "AsyncReset"))
 (defvar firrtl-keyword
   '("circuit" "module" "extmodule" "when" "else" "skip" "flip" "is invalid"
     "with" "printf" "stop" "inst" "of" "defname"))

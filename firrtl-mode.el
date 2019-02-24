@@ -151,7 +151,7 @@ repeated key presses."
     table))
 
 ;;;###autoload
-(define-derived-mode firrtl-mode text-mode "FIRRTL mode"
+(define-derived-mode firrtl-mode text-mode "FIRRTL"
   "Major mode for editing FIRRTL (Flexible Intermediate Representation of RTL)."
   (when firrtl-tab-width
     (setq tab-width firrtl-tab-width)) ;; Defined FIRRTL tab width

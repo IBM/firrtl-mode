@@ -158,6 +158,7 @@ repeated key presses."
 
   ;; Set everything up
   (setq font-lock-defaults '(firrtl-font-lock-keywords))
+  (setq indent-tabs-mode nil)
   (setq-local indent-line-function 'firrtl-cycle-indents)
   (set-syntax-table firrtl-table)
   (setq-local comment-start ";")

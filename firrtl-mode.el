@@ -46,12 +46,19 @@
   '("add" "sub" "mul" "div" "rem" "lt" "leq" "gt" "geq" "eq" "neq" "pad"
     "asUInt" "asSInt" "asClock" "shl" "shr" "dshl" "dshr" "cvt" "neg" "not"
     "and" "or" "xor" "andr" "orr" "xorr" "cat" "bits" "head" "tail"
-    "asFixedPoint" "bpshl" "bpshr" "bpset" "mux" "validif"))
+    "asFixedPoint" "bpshl" "bpshr" "bpset" "mux" "validif" "read" "read"
+    "force" "force_initial" "release" "release_initial" "assert" "assume"
+    "cover" "asAsyncReset" "probe" "rwprobe"))
 (defvar firrtl-type
-  '("input" "output" "wire" "reg" "node" "Clock" "Analog" "parameter" "AsyncReset"))
+  '("input" "output" "wire" "reg" "regreset" "node" "Clock" "Analog" "parameter"
+    "UInt" "SInt" "Reset" "AsyncReset" "Integer" "String" "Path" "Probe"
+    "RWProbe"))
 (defvar firrtl-keyword
-  '("circuit" "module" "extmodule" "when" "else" "skip" "flip" "is invalid"
-    "with" "printf" "stop" "inst" "of" "defname"))
+  '("circuit" "module" "extmodule" "intmodule" "declgroup" "class" "when" "else"
+    "skip" "flip" "is invalid" "with" "printf" "stop" "inst" "of" "defname"
+    "connect" "invalidate" "define" "propassign" "const" "group" "intrinsic" "cmem"
+    "smem" "read mport" "write mport" "infer mport" "mem" "data-type" "depth"
+    "read-latency" "write-latency" "reader" "writer" "read-under-write" "type"))
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
@@ -63,8 +70,11 @@
 (defvar firrtl-keyword-regexp (regexp-opt firrtl-keyword 'words))
 
 (defvar firrtl-font-lock-keywords
-  `(;; Circuit, module declarations
-    ("\\(circuit\\|\\(ext\\)?module\\)\\s-+\\(\\sw+\\)"
+  `(;; Version information
+    ("\\(FIRRTL version [0-9]+\.[0-9]+\.[0-9]+\\)"
+     (1 font-lock-comment-face))
+    ;; Circuit, module declarations
+    ("\\(circuit\\|\\(ext\\|int\\)?module\\|declgroup\\|class\\|type\\)\\s-+\\(\\sw+\\)"
      (3 font-lock-function-name-face))
     ;; Literals
     ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
@@ -82,11 +92,13 @@
     ;; Types
     (,firrtl-type-regexp . font-lock-type-face)
     ;; Variable declarations
-    ("\\(input\\|output\\|wire\\|reg\\|node\\|parameter\\)\s+\\([A-Za-z0-9_]+\\)"
+    ("\\(input\\|output\\|wire\\|reg\\|regreset\\|node\\|parameter\\|[cs]?mem\\|mport\\)\s+\\([`A-Za-z0-9_]+\\)"
      (2 font-lock-variable-name-face))
     ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
      (1 font-lock-variable-name-face)
      (2 font-lock-type-face))
+    ("group\s+\\([A-Za-z0-9_]+\\)"
+     (1 font-lock-type-face))
     ))
 
 ;; Indentation
@@ -96,8 +108,10 @@
   (let (indents)
     (cond ((or (bobp) (looking-at "\s*circuit"))
            (setq indents (list 0)))
-          ((looking-at "\s*\\(ext\\)?module")
+          ((looking-at "\s*\\(ext\\|int\\)?module")
            (setq indents (list tab-width)))
+          ((looking-at "\s*;")
+           (setq indents (number-sequence 0 (current-indentation) tab-width)))
           (t
            (save-excursion
              (backward-word)
@@ -106,11 +120,16 @@
                     (setq indents (list 0)))
                    ((looking-at "\s*circuit")
                     (setq indents (list tab-width)))
-                   ((looking-at "\s*\\(ext\\)?module")
+                   ((looking-at "\s*\\(\\(ext\\|int\\)?module\\|type\\)")
                     (setq indents (list (* 2 tab-width))))
-                   ((looking-at "\s*\\(when\\|else\\)")
+                   ((looking-at "\s*\\(when\\|else\\|group\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
                     (setq indents (number-sequence
                                    (* 2 tab-width)
+                                   (+ (current-indentation) tab-width)
+                                   tab-width)))
+                   ((looking-at "\s*declgroup")
+                    (setq indents (number-sequence
+                                   tab-width
                                    (+ (current-indentation) tab-width)
                                    tab-width)))
                    (t

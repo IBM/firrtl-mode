@@ -59,7 +59,7 @@
     "connect" "invalidate" "define" "propassign" "const" "group" "intrinsic" "cmem"
     "smem" "read mport" "write mport" "infer mport" "mem" "data-type" "depth"
     "read-latency" "write-latency" "reader" "writer" "read-under-write" "type"
-    "layer" "layerblock"))
+    "layer" "layerblock" "public"))
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
@@ -109,7 +109,7 @@
   (let (indents)
     (cond ((or (bobp) (looking-at "\s*circuit"))
            (setq indents (list 0)))
-          ((looking-at "\s*\\(ext\\|int\\)?module")
+          ((looking-at "\s*\\(public\s+\\)?\\(ext\\|int\\)?module")
            (setq indents (list tab-width)))
           ((looking-at "\s*;")
            (setq indents (number-sequence 0 (current-indentation) tab-width)))
@@ -121,7 +121,7 @@
                     (setq indents (list 0)))
                    ((looking-at "\s*circuit")
                     (setq indents (list tab-width)))
-                   ((looking-at "\s*\\(\\(ext\\|int\\)?module\\|type\\)")
+                   ((looking-at "\s*\\(public\s+\\)?\\(\\(ext\\|int\\)?module\\|type\\)")
                     (setq indents (list (* 2 tab-width))))
                    ((looking-at "\s*\\(when\\|else\\|group\\|layerblock\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
                     (setq indents (number-sequence

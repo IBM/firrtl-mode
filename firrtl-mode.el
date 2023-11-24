@@ -58,7 +58,8 @@
     "skip" "flip" "is invalid" "with" "printf" "stop" "inst" "of" "defname"
     "connect" "invalidate" "define" "propassign" "const" "group" "intrinsic" "cmem"
     "smem" "read mport" "write mport" "infer mport" "mem" "data-type" "depth"
-    "read-latency" "write-latency" "reader" "writer" "read-under-write" "type"))
+    "read-latency" "write-latency" "reader" "writer" "read-under-write" "type"
+    "layer" "layerblock"))
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
@@ -74,7 +75,7 @@
     ("\\(FIRRTL version [0-9]+\.[0-9]+\.[0-9]+\\)"
      (1 font-lock-comment-face))
     ;; Circuit, module declarations
-    ("\\(circuit\\|\\(ext\\|int\\)?module\\|declgroup\\|class\\|type\\)\\s-+\\(\\sw+\\)"
+    ("\\(circuit\\|\\(ext\\|int\\)?module\\|declgroup\\|layer\\|class\\|type\\)\\s-+\\(\\sw+\\)"
      (3 font-lock-function-name-face))
     ;; Literals
     ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
@@ -97,7 +98,7 @@
     ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
      (1 font-lock-variable-name-face)
      (2 font-lock-type-face))
-    ("group\s+\\([A-Za-z0-9_]+\\)"
+    ("\\(group\\|layerblock\\)\s+\\([A-Za-z0-9_]+\\)"
      (1 font-lock-type-face))
     ))
 
@@ -122,12 +123,12 @@
                     (setq indents (list tab-width)))
                    ((looking-at "\s*\\(\\(ext\\|int\\)?module\\|type\\)")
                     (setq indents (list (* 2 tab-width))))
-                   ((looking-at "\s*\\(when\\|else\\|group\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
+                   ((looking-at "\s*\\(when\\|else\\|group\\|layerblock\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
                     (setq indents (number-sequence
                                    (* 2 tab-width)
                                    (+ (current-indentation) tab-width)
                                    tab-width)))
-                   ((looking-at "\s*declgroup")
+                   ((looking-at "\s*\\(declgroup\\|layer\\)")
                     (setq indents (number-sequence
                                    tab-width
                                    (+ (current-indentation) tab-width)

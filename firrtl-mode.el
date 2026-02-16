@@ -44,22 +44,24 @@
 ;;; Actual Code
 (defvar firrtl-primop
   '("add" "sub" "mul" "div" "rem" "lt" "leq" "gt" "geq" "eq" "neq" "pad"
-    "asUInt" "asSInt" "asClock" "shl" "shr" "dshl" "dshr" "cvt" "neg" "not"
-    "and" "or" "xor" "andr" "orr" "xorr" "cat" "bits" "head" "tail"
-    "asFixedPoint" "bpshl" "bpshr" "bpset" "mux" "validif" "read" "read"
-    "force" "force_initial" "release" "release_initial" "assert" "assume"
-    "cover" "asAsyncReset" "probe" "rwprobe"))
+    "asUInt" "asSInt" "asClock" "asAsyncReset" "asReset" "shl" "shr" "dshl"
+    "dshr" "cvt" "neg" "not" "and" "or" "xor" "andr" "orr" "xorr" "cat"
+    "bits" "head" "tail" "mux" "validif" "read" "probe" "rwprobe"
+    "force" "force_initial" "release" "release_initial"
+    "asFixedPoint" "bpshl" "bpshr" "bpset"
+    "integer_add" "integer_mul" "integer_shr" "integer_shl" "list_concat"))
 (defvar firrtl-type
   '("input" "output" "wire" "reg" "regreset" "node" "Clock" "Analog" "parameter"
-    "UInt" "SInt" "Reset" "AsyncReset" "Integer" "String" "Path" "Probe"
+    "UInt" "SInt" "Reset" "AsyncReset" "Integer" "String" "List" "Path" "Probe"
     "RWProbe"))
 (defvar firrtl-keyword
   '("circuit" "module" "extmodule" "intmodule" "declgroup" "class" "when" "else"
-    "skip" "flip" "is invalid" "with" "printf" "stop" "inst" "of" "defname"
-    "connect" "invalidate" "define" "propassign" "const" "group" "intrinsic" "cmem"
-    "smem" "read mport" "write mport" "infer mport" "mem" "data-type" "depth"
-    "read-latency" "write-latency" "reader" "writer" "read-under-write" "type"
-    "layer" "layerblock" "public"))
+    "match" "skip" "flip" "is invalid" "with" "printf" "fprintf" "fflush" "stop"
+    "inst" "of" "defname" "connect" "invalidate" "define" "propassign" "attach"
+    "const" "group" "intrinsic" "cmem" "smem" "read mport" "write mport"
+    "infer mport" "mem" "data-type" "depth" "read-latency" "write-latency"
+    "reader" "writer" "read-under-write" "type" "layer" "layerblock" "public"
+    "formal" "assert" "assume" "cover" "enablelayer" "knownlayer" "bind" "inline"))
 
 (defvar firrtl-primop-regexp
   (mapconcat 'identity
@@ -74,8 +76,8 @@
   `(;; Version information
     ("\\(FIRRTL version [0-9]+\.[0-9]+\.[0-9]+\\)"
      (1 font-lock-comment-face))
-    ;; Circuit, module declarations
-    ("\\(circuit\\|\\(ext\\|int\\)?module\\|declgroup\\|layer\\|class\\|type\\)\\s-+\\(\\sw+\\)"
+    ;; Circuit, module, layer, formal, type alias, class, declgroup declarations
+    ("\\(circuit\\|\\(ext\\|int\\)?module\\|declgroup\\|layer\\|class\\|formal\\|type\\)\\s-+\\(\\sw+\\|`[^`]+`\\)"
      (3 font-lock-function-name-face))
     ;; Literals
     ("\\(\\(U\\|S\\)Int<[0-9]+>\\)\\(.+?\\)?"
@@ -83,8 +85,9 @@
     ;; Indices and numbers (for a firrtl-syntax feel)
     ("[ \\[(]\\([0-9]+\\)"
      (1 font-lock-string-face))
-    ;; Assignment operators
+    ;; Keywords
     (,firrtl-keyword-regexp . font-lock-keyword-face)
+    ;; Legacy operators and assignment operators
     ("\\(<[=-]\\|reset\s*=>\\)"
      (1, font-lock-keyword-face))
     ;; PrimOps
@@ -92,14 +95,20 @@
      (1 font-lock-keyword-face))
     ;; Types
     (,firrtl-type-regexp . font-lock-type-face)
-    ;; Variable declarations
-    ("\\(input\\|output\\|wire\\|reg\\|regreset\\|node\\|parameter\\|[cs]?mem\\|mport\\)\s+\\([`A-Za-z0-9_]+\\)"
+    ;; Variable declarations (including literal identifiers with backticks)
+    ("\\(input\\|output\\|wire\\|reg\\|regreset\\|node\\|parameter\\|[cs]?mem\\|mport\\)\s+\\(\\sw+\\|`[^`]+`\\)"
      (2 font-lock-variable-name-face))
-    ("inst\s+\\([A-Za-z0-9_]+\\)\s+of\s+\\([A-Za-z0-9_]+\\)"
+    ;; Instance declarations
+    ("inst\s+\\(\\sw+\\|`[^`]+`\\)\s+of\s+\\(\\sw+\\|`[^`]+`\\)"
      (1 font-lock-variable-name-face)
      (2 font-lock-type-face))
-    ("\\(group\\|layerblock\\)\s+\\([A-Za-z0-9_]+\\)"
-     (1 font-lock-type-face))
+    ;; Group and layerblock statements (with dotted paths)
+    ("\\(group\\|layerblock\\)\s+\\(\\(?:\\sw+\\|`[^`]+`\\)\\(?:\\.\\(?:\\sw+\\|`[^`]+`\\)\\)*\\)"
+     (1 font-lock-keyword-face)
+     (2 font-lock-type-face))
+    ;; Match statement cases (enum variants)
+    ("^\\s-+\\([A-Za-z0-9_]+\\)\\(([^)]+)\\)?:"
+     (1 font-lock-constant-face))
     ))
 
 ;; Indentation
@@ -121,14 +130,14 @@
                     (setq indents (list 0)))
                    ((looking-at "\s*circuit")
                     (setq indents (list tab-width)))
-                   ((looking-at "\s*\\(public\s+\\)?\\(\\(ext\\|int\\)?module\\|type\\)")
+                   ((looking-at "\s*\\(public\s+\\)?\\(\\(ext\\|int\\)?module\\|type\\|formal\\)")
                     (setq indents (list (* 2 tab-width))))
-                   ((looking-at "\s*\\(when\\|else\\|group\\|layerblock\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
+                   ((looking-at "\s*\\(when\\|else\\|match\\|group\\|layerblock\\|\\(mem\s+[A-Za-z0-9_]+\\)\\)")
                     (setq indents (number-sequence
                                    (* 2 tab-width)
                                    (+ (current-indentation) tab-width)
                                    tab-width)))
-                   ((looking-at "\s*\\(declgroup\\|layer\\)")
+                   ((looking-at "\s*\\(declgroup\\|layer\\|class\\)")
                     (setq indents (number-sequence
                                    tab-width
                                    (+ (current-indentation) tab-width)
